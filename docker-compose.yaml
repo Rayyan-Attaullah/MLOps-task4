@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+    environment:
+      - FLASK_ENV=development   # Set Flask to development mode for file watching
+    volumes:
+      - ./backend:/app           # Mount the backend directory to enable live updates
+    develop:                     # Add this develop section for watch mode
+      watch:                     # Enable watch mode
+        - action: sync           # Sync changes
+          path: ./backend        # Path to sync from the host
+          target: /app           # Path in the container
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "80:80"
+
+volumes:
+  mongo_data:
